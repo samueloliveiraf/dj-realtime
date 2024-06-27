@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificações em Tempo Real</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .notification {
+            background-color: #e0ffe0;
+            border: 1px solid #b2ffb2;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Notificações em Tempo Real</h1>
+        <div id="notifications">
+            <!-- Notificações aparecerão aqui -->
+        </div>
+        <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+        <button onclick="sendNotification()">Enviar Notificação</button>
+    </div>
+
+    <script>
+        // Conectar ao WebSocket
+        const socket = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const notifications = document.getElementById('notifications');
+
+            // Criar um novo elemento para a notificação
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = 'Nova notificação: ' + data.message;
+
+            // Adicionar a notificação ao container
+            notifications.appendChild(notification);
+        };
+
+        socket.onclose = function(e) {
+            console.error('WebSocket fechado inesperadamente');
+        };
+
+        function sendNotification() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+
+            socket.send(JSON.stringify({
+                'message': message
+            }));
+
+            messageInput.value = '';
+        }
+    </script>
+</body>
+</html>
